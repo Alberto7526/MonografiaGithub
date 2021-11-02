@@ -1,0 +1,3 @@
+- name: logistic-regressor
+  params:
+    random_state: 0
