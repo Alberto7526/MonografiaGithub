@@ -1,0 +1,6 @@
+Estimator:
+- name: logistic-regressor
+  params:
+    random_state: 0
+data:
+  filepath: ./NewDataset/prueba.csv

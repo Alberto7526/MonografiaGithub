@@ -47,3 +47,7 @@ class SalesPerCategory():
     def load_items(self):
         df = pd.read_csv("./Datasets/items.csv")
         return df
+
+'''
+
+'''

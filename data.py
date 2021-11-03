@@ -1,50 +1,77 @@
 '''
 In this module we're going to load, store and  prepare the dataset for machine learning experiments.
 '''
+from numpy.lib.shape_base import split
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def reader(filepath):
-    '''
-    In this function we load the dataset 
 
-    Parameters:
-    filepath:  File path where 
-
-    Return:
-    df: dataframe
-    '''
-    try:
-        df = pd.read_csv(filepath)
-    except:
-        df_old = pd.read_csv("./Datasets/Sales_train.csv")
-        df = create_new_dataset(df_old)
-    return df
-
-
-def get_dataset(filepath, process = True,cross_validation = True):
+def get_dataset(filepath,look_back=3):
     '''
     This is the main function, here we process and split the  dataset 
     '''
-    df = reader(filepath)
-    if process:
-        df = clean_dataset(df)
-        df = new_feature(df) 
-        split_mapping = dataset_split(df)
-        return split_mapping
-    else:
-        dataY = df['item_cnt_day']
-        dataX = df.drop(columns=['item_cnt_day'])
-        threshold = round(len(dataX)*(1-0.3))
-        X_train = dataX[0:threshold]
-        y_train = dataY[0:threshold]
-        X_test = dataX[threshold:]
-        y_test = dataY[threshold:]
-        split_mapping = {"train": (X_train, y_train), "test": (X_test, y_test)}
-        return split_mapping
+    df = pd.read_csv(filepath)
+    split_mapping = split_dataset(df,look_back=look_back)
+    return split_mapping
 
-def new_feature(df):
+
+
+def split_dataset(df,look_back):    
+    x = df.loc[:,['shop_id','item_category_id']]
+    y = df.drop(columns=['shop_id','item_category_id','id','Unnamed: 0'])
+    s = split_looking_back(x,y,look_back)    
+    #split_mapping = {"train": (X_train, y_train), "test": (X_test, y_test)}
+    return s
+
+def split_looking_back(x,y,look_back):
+    dataX = x
+    datay = pd.DataFrame()
+    X = pd.DataFrame()
+    for i in range(0,(len(y.columns)-look_back-3),look_back+1):
+        for k in range(look_back+1):
+            if k==look_back:
+                a = y.loc[:,['month_'+str(i+k)]]
+                a = a.rename(columns={'month_'+str(i+k):'y'})
+                datay = pd.concat([datay, a], axis=0,)
+            else:
+                a = y.loc[:,['month_'+str(i+k)]]
+                a = a.rename(columns={'month_'+str(i+k):'x_'+str(k)})
+                dataX = pd.concat([dataX, a], axis=1,)
+        X = pd.concat([X, dataX], axis=0,)
+        dataX = x
+    train = X,datay
+    dataX_test = x
+    for i in range((len(y.columns)-(look_back+1)),len(y.columns),1):
+        if i==(len(y.columns)-1):
+            a = y.loc[:,['month_'+str(i)]]
+            a = a.rename(columns={'month_'+str(i):'y'})
+            datay_test = a.copy()
+        else:
+            a = y.loc[:,['month_'+str(i)]]
+            a = a.rename(columns={'month_'+str(i):'x_'+str(i)})
+            dataX_test = pd.concat([dataX_test, a], axis=1,)
+    test = dataX_test, datay_test 
+    split_mapping = {"train": (train), "test": (test)}
+    return split_mapping
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def new_feacture(df):
     items = pd.read_csv("./Datasets/items.csv")
     items = items[['item_id','item_category_id']]
     df = pd.merge(df, items, on='item_id',  how='left')
@@ -78,34 +105,6 @@ def delete_outliers(df):
         pass
 
     return df
-
-def dataset_split(df, look_back=3,size_test = 0.3):
-    '''
-    Organize the dataset by time windows using a look_back
-    and then divide the data into train and test.
-
-    Parameters:
-    df:  the dataset
-    look_back:  
-
-    Return:
-    df: dataframe
-    '''
-    y = df.item_cnt_day
-    X = df.drop(columns=["item_cnt_day"])
-    dataX, Y = [], []
-    for i in range(len(y)-look_back):
-        a = y[i:(i+look_back)]
-        dataX.append(a)
-        Y.append(y[i + look_back])
-    dataY = np.array(Y)
-    threshold = round(len(dataX)*(1-size_test))
-    X_train = dataX[0:threshold]
-    y_train = dataY[0:threshold]
-    X_test = dataX[threshold:]
-    y_test = dataY[threshold:]
-    split_mapping = {"train": (X_train, y_train), "test": (X_test, y_test)}
-    return split_mapping
 
 def transform_data(dataset):
     '''
