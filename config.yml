@@ -5,10 +5,7 @@ estimator:
 
 
 data:
-  use_new_data: 'si'
-  filepath: "./Datasets/Sales_train.csv"
-  filepath_new_data: "./NewDataset/New_dataset.csv" 
-  process: True
+  filepath: "./NewDataset/New_dataset.csv"
 
 
 export:
