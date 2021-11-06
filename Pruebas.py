@@ -6,7 +6,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RANSACRegressor
 from sklearn.model_selection import GridSearchCV
 from tensorflow.keras.layers import LSTM,Dense,Input,Concatenate,add
-from tensorflow.keras.models import Model 
+from tensorflow.keras.models import Model
+from data import * 
 
 
 def split_looking_back(x,y,look_back):
@@ -30,26 +31,20 @@ def blockTimeSeriesSplit(X,y, margin=0, n_splits=10):
         yield indices[start: validation], indices[validation + margin: stop]
 
 
-df = pd.read_csv('./NewDataset/New_dataset.csv')
-print(df.head())
-
-y = df['item_cnt_day']
-x = df.drop(columns=['item_cnt_day'])
-
-threshold = int(len(x)*0.7)
-x_train = x[0:threshold]
-y_train = y[0:threshold] 
-
+X = get_dataset(filepath='./NewDataset/New_dataset.csv')
+x_train = X['train'][0]
+y_train = X['train'][1] 
 
 cv_plit = blockTimeSeriesSplit(x_train,y_train,n_splits=2)
 
 
-'''
-estimator = RANSACRegressor(LinearRegression(),residual_threshold=20.0,loss='absolute_loss')
-param_grid = {'max_trials':[40,50,70,80,100,120,150],
-            'min_samples':[50,100,200,300]}
-model = GridSearchCV(estimator,param_grid,cv = cv_plit,return_train_score=False)
 
+estimator = RANSACRegressor(LinearRegression(),residual_threshold=20.0,loss='absolute_loss')
+param_grid = {'max_trials':[30,40,50,70,80,100,120,150],
+            'min_samples':[20,100,200,300]}
+#model = GridSearchCV(estimator, param_grid, cv = cv_plit, return_train_score=False)
+model = GridSearchCV(estimator, param_grid, return_train_score=False)
+print(model)
 model = model.fit(x_train,y_train)
 result = pd.DataFrame(model.cv_results_)
 print(result)
@@ -84,7 +79,7 @@ model.compile(optimizer='adam',
 
 model.fit([x1,x2],y)
 
-'''
+
 categoria, tienda,ventas mes de todos los meses (0-33)
 33? ()
 

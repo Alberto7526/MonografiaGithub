@@ -3,4 +3,4 @@ Estimator:
   params:
     random_state: 0
 data:
-  filepath: ./NewDataset/prueba.csv
+  filepath: ./NewDataset/New_dataset.csv
