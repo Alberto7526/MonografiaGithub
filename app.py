@@ -1,5 +1,6 @@
 import typer
 import model
+import division_dataset as div_d
 from functools import lru_cache
 import yaml
 import typing as t
@@ -63,7 +64,7 @@ def _save_versioned_estimator(estimator: BaseEstimator, config_file: str, output
     except Exception as e:
         typer.echo(f"Coudln't serialize model due to error {e}")
         shutil.rmtree(model_dir)
-
+##############################################################################################3
 @app.command()
 def find_hyperparams(config_file: str):
     search_config = _load_config(config_file, "search")
@@ -111,8 +112,22 @@ def _save_best_params_yaml(config_file: str, best_params: dict, best_score: floa
                 'best_score': float(best_score)}
     with open(filepath, "w") as f:
         yaml.dump(content, f)
+###################################################################
+@app.command()
+def data_preparation(file_path: str):
+    df = pd.read_csv(file_path)
+    df = div_d.transform_data_shop_category(df)
+    try:
+        df.to_csv('./NewDataset/New_dataset.csv')
+    except:
+        pass
+
+
+
+
 if __name__ == "__main__":
     app()
     #python app.py .\config.yml 
     #python app.py train .\config.yml
     #python app.py find-hyperparams .\config.yml 
+    #python app.py data-preparation .\Datasets\sales_train.csv
