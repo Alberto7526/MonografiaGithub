@@ -2,6 +2,7 @@ import pandas as pd
 import typing as t
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import RANSACRegressor
 
 EstimatorConfig = t.List[t.Dict[str, t.Any]]
 
@@ -16,11 +17,19 @@ def build_estimator(config: EstimatorConfig):
     model = Pipeline(steps)
     return model
 
+def build_estimator_search(config: EstimatorConfig):
+    estimator_mapping = get_estimator_mapping()
+    name = config[0]["name"]
+    params = config[0]["params"]
+    estimator = estimator_mapping[name](**params)
+    return estimator
+
 
 def get_estimator_mapping(): 
     return {
         "logistic-regressor": LogisticRegression,
-        "baseline": SalesPerCategory
+        "baseline": SalesPerCategory,
+        "RANSACRegressor": RANSACRegressor 
     }
 
 class SalesPerCategory():

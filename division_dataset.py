@@ -2,23 +2,7 @@ import pandas as pd
 import numpy as np 
 import data
 import matplotlib.pyplot as plt
-'''
-try:
-    df = pd.read_csv('.\\NewDataset\\New_dataset_with_new_feature.csv')
-except:
-    df = pd.read_csv('.\\NewDataset\\New_dataset.csv')
-    df = data.clean_dataset(df)
-    df = data.new_feacture(df) 
 
-    df = df.rename(columns={'item_cnt_day':'item_cnt_month'})
-    df = df.drop(columns=(['Unnamed: 0']))
-    df.to_csv('./NewDataset/New_dataset_with_new_feature.csv')
-
-y = df.item_cnt_month
-
-plt.plot(y)
-plt.show()
-'''
 
 def transform_data_shop_category(dataset):
     items = pd.read_csv("./Datasets/items.csv")
@@ -112,13 +96,3 @@ def transform_data_category(dataset):
     return dataset
 
 
-df = pd.read_csv('.\\Datasets\\sales_train.csv')
-df = transform_data_category(df)
-df.to_csv('./NewDataset/prueba_category.csv')
-
-for i in range(5):
-    plt.subplot(5,1,(i+1))
-    plt.plot(df['month_'+str(i)])
-plt.figure()
-plt.plot(df['month_33'])
-plt.show()

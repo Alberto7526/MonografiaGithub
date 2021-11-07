@@ -8,5 +8,20 @@ data:
   filepath: "./NewDataset/New_dataset.csv"
 
 
+search:
+  - estimator: 
+    - name: RANSACRegressor
+      params: 
+        residual_threshold: 20.0
+        loss: 'absolute_loss'
+  - grid: 
+     - max_trials: [40,50,70,80,100,120,150]
+       min_samples: [50,100,200,300]
+
+
+
 export:
   output_dir: ./models
+
+export_best:
+  output_dir: ./grid_models
