@@ -27,7 +27,7 @@ def custom_error(y_true, y_pred,df,aditional_info = False):
     """
     df = df[['item_id','item_price']]
     sales = {'item':[],'cnt_error':[],'total':[],'message':[]}
-    for item_y_true,item_y_pred,data in zip(y_true,y_pred,np.array(df)):
+    for item_y_true,item_y_pred,data in zip(np.array(y_true),np.array(y_pred),np.array(df)):
         diff = item_y_true-item_y_pred
         if diff >= 0:
             sales['message'].append('Si')

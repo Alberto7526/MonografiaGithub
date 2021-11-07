@@ -1,5 +1,6 @@
 import typer
 import model
+import metrics
 import division_dataset as div_d
 from functools import lru_cache
 import yaml
@@ -28,7 +29,36 @@ def train(config_file: str):
     estimator.fit(X_train, y_train)
     output_dir = _load_config(config_file, "export")["output_dir"] 
     _save_versioned_estimator(estimator, config_file, output_dir)
-    
+
+@app.command()
+def test(config_file: str):
+    model_path = os.path.join("models", "2021-11-06 15-18", "model.joblib")
+    og_dataset_path = os.path.join('Datasets', 'sales_train.csv')
+    model = joblib.load(model_path)
+    data_config = _load_config(config_file, "data")
+    X = _get_dataset(data_config)
+    X_test = X['test'][0]
+    y_test = X['test'][1]
+    prediction = model.predict(X_test)
+    print('prediction', prediction)
+    df = pd.read_csv(og_dataset_path)
+    error = metrics.custom_error(y_test,prediction,df)
+    content = {
+        'cnt_error': float(error['cnt_error'][0]),
+        'total_money': float(error['total_money'][0]),
+    }
+    print(content)
+    output_dir = _load_config(config_file, "metrics")['export']['filepath']
+    with open(output_dir, "w") as f:
+        yaml.dump(content, f)
+
+# @app.command()
+# def predict(config_file: str, shop_id: int, category_id: int):
+#     print('shop id:', shop_id, 'category id:', category_id)
+#     data_config = _load_config(config_file, "data")
+#     X = _get_dataset(data_config)
+#     # ts = X.loc[(X['shop_id'] == shop_id) & X['favorite_color'].isin(array)]
+#     print(X)
 
 def _get_dataset(data_config):
     file_path = data_config['filepath']
@@ -129,5 +159,5 @@ if __name__ == "__main__":
     app()
     #python app.py .\config.yml 
     #python app.py train .\config.yml
-    #python app.py find-hyperparams .\config.yml 
+    #python app.py find-hyperparams .\config.yml
     #python app.py data-preparation .\Datasets\sales_train.csv
