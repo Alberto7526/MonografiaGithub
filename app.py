@@ -32,7 +32,7 @@ def train(config_file: str):
 
 @app.command()
 def test(config_file: str):
-    model_path = os.path.join("models", "2021-11-06 15-18", "model.joblib")
+    model_path = _load_config(config_file, "model")['filepath']
     og_dataset_path = os.path.join('Datasets', 'sales_train.csv')
     model = joblib.load(model_path)
     data_config = _load_config(config_file, "data")
@@ -48,8 +48,8 @@ def test(config_file: str):
         'total_money': float(error['total_money'][0]),
     }
     print(content)
-    output_dir = _load_config(config_file, "metrics")['export']['filepath']
-    with open(output_dir, "w") as f:
+    output_file = _load_config(config_file, "metrics")['export']['filepath']
+    with open(output_file, "w") as f:
         yaml.dump(content, f)
 
 # @app.command()

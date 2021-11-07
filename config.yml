@@ -3,6 +3,8 @@ estimator:
   params:
     random_state: 0
 
+model:
+  filepath: "./models/2021-11-06 15-18/model.joblib"
 
 data:
   filepath: "./NewDataset/New_dataset.csv"
