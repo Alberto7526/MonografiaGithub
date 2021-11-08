@@ -40,25 +40,38 @@ def test(config_file: str):
     X_test = X['test'][0]
     y_test = X['test'][1]
     prediction = model.predict(X_test)
-    print('prediction', prediction)
     df = pd.read_csv(og_dataset_path)
     error = metrics.custom_error(y_test,prediction,df)
     content = {
         'cnt_error': float(error['cnt_error'][0]),
         'total_money': float(error['total_money'][0]),
     }
-    print(content)
     output_file = _load_config(config_file, "metrics")['export']['filepath']
     with open(output_file, "w") as f:
         yaml.dump(content, f)
 
-# @app.command()
-# def predict(config_file: str, shop_id: int, category_id: int):
-#     print('shop id:', shop_id, 'category id:', category_id)
-#     data_config = _load_config(config_file, "data")
-#     X = _get_dataset(data_config)
-#     # ts = X.loc[(X['shop_id'] == shop_id) & X['favorite_color'].isin(array)]
-#     print(X)
+@app.command()
+def predict(config_file: str, shop_id: int, category_id: int):
+    data_config = _load_config(config_file, "data")['filepath']
+    model_path = _load_config(config_file, "model")['filepath']
+    # Find the corresponding shop/category info:
+
+    df = pd.read_csv(data_config)
+    row = df[df['id']==str((shop_id, category_id))]
+    relevant_columns = ['shop_id', 'item_category_id']
+    columns_to_drop = list(
+        [column for column in row.columns if (column != 'shop_id' and column != 'item_category_id')])
+
+    for i in range(3):
+        columns_to_drop.pop()
+    
+    row = row.drop(columns=columns_to_drop)
+
+    # Use the model:
+    model = joblib.load(model_path)
+    prediction = model.predict(row)
+    print(prediction)
+    return prediction[0]
 
 def _get_dataset(data_config):
     file_path = data_config['filepath']
