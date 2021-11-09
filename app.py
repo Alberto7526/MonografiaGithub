@@ -1,5 +1,6 @@
 import typer
 import model
+import metrics
 import division_dataset as div_d
 from functools import lru_cache
 import yaml
@@ -28,7 +29,50 @@ def train(config_file: str):
     estimator.fit(X_train, y_train)
     output_dir = _load_config(config_file, "export")["output_dir"] 
     _save_versioned_estimator(estimator, config_file, output_dir)
+
+@app.command()
+def test(config_file: str):
+    model_config = _load_config(config_file, "model")
+    og_dataset_path = os.path.join('Datasets', 'sales_train.csv')
+    model = joblib.load(model_config['filepath'])
+    data_config = _load_config(config_file, "data")
+    X = _get_dataset(data_config)
+    X_test = X['test'][0]
+    y_test = X['test'][1]
+    prediction = model.predict(X_test)
+    df = pd.read_csv(og_dataset_path)
+    error = metrics.custom_error(y_test,prediction,df)
+    content = {
+        'cnt_error': float(error['cnt_error'][0]),
+        'total_money': float(error['total_money'][0]),
+    }
+    output_dir = model_config['dir']
+    output_file = _load_config(config_file, "metrics")['export']['filepath']
+    with open(os.path.join(output_dir, output_file), "w") as f:
+        yaml.dump(content, f)
+
+@app.command()
+def predict(config_file: str, shop_id: int, category_id: int, predict_last: bool):
+    data_config = _load_config(config_file, "data")['filepath']
+    model_path = _load_config(config_file, "model")['filepath']
+
+    # Find the corresponding shop/category info:
+    df = pd.read_csv(data_config)
+    row = df[df['id']==str((shop_id, category_id))]
+    relevant_columns = ['shop_id', 'item_category_id']
     
+    # Just for comparing purpose
+    for i in (range(-3,0) if predict_last else range(-4,-1)):
+        relevant_columns.append(row.columns[i])
+    columns_to_drop = list(
+        [column for column in row.columns if column not in relevant_columns])
+    row = row.drop(columns=columns_to_drop)
+
+    # Use the model:
+    model = joblib.load(model_path)
+    prediction = model.predict(row)
+    print(prediction[0])
+    return prediction[0]
 
 def _get_dataset(data_config):
     file_path = data_config['filepath']
@@ -129,5 +173,5 @@ if __name__ == "__main__":
     app()
     #python app.py .\config.yml 
     #python app.py train .\config.yml
-    #python app.py find-hyperparams .\config.yml 
+    #python app.py find-hyperparams .\config.yml
     #python app.py data-preparation .\Datasets\sales_train.csv
