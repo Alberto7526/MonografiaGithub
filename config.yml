@@ -10,7 +10,7 @@ model:
 data:
   filepath: "./NewDataset/New_dataset.csv"
 
-
+  
 search:
   - estimator: 
     - name: RANSACRegressor
