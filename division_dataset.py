@@ -8,9 +8,8 @@ def transform_data_shop_category(dataset):
     items = pd.read_csv("./Datasets/items.csv")
     dataset = pd.merge(dataset,items[['item_id','item_category_id']],how='inner')
     dataset = dataset.groupby(['date_block_num','shop_id','item_category_id'], as_index=False).sum()
-    dataset = dataset.drop(columns=('item_id'))
+    dataset = dataset.drop(['item_id','item_price'],axis=1)
     dataset = dataset.rename(columns={'item_cnt_day':'item_cnt_month'})
-    print('.......', len(dataset))
     sales = {'id':[],'shop_id':[],'item_category_id':[]}
 
     for i in range(34):
@@ -72,7 +71,6 @@ def transform_data_category(dataset):
     dataset = dataset.groupby(['date_block_num','item_category_id'], as_index=False).sum()
     dataset = dataset.drop(columns=('item_id'))
     dataset = dataset.rename(columns={'item_cnt_day':'item_cnt_month'})
-    print('.......', len(dataset))
     sales = {'item_category_id':[]}
 
     for i in range(34):
@@ -94,5 +92,4 @@ def transform_data_category(dataset):
 
     dataset = pd.DataFrame(sales)
     return dataset
-
 
