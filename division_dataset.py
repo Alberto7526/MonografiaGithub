@@ -34,7 +34,11 @@ def transform_data_shop_category(dataset):
                     sales['month_'+str(j)].append(0)
 
     dataset = pd.DataFrame(sales)
-    
+    dataset = delete_outliers(dataset)
+    try:
+        dataset.to_csv('./NewDataset/New_dataset.csv')
+    except:
+        pass
     return dataset
 
 def transform_data_shop(dataset):
@@ -93,3 +97,14 @@ def transform_data_category(dataset):
     dataset = pd.DataFrame(sales)
     return dataset
 
+def delete_outliers(dataset_):
+    dataset_ = dataset_.drop(['id'],axis=1)
+    for i in range(34):
+        dataset_.loc[(dataset_['month_'+str(i)] >=1500 ),'month_'+str(i)]=1500
+    
+    return dataset_
+        
+
+if __name__ == "__main__":
+    df = pd.read_csv('./Datasets/sales_train.csv')
+    transform_data_shop_category(df)
