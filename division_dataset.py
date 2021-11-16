@@ -99,6 +99,18 @@ def transform_data_category(dataset):
 
 def delete_outliers(dataset_):
     dataset_ = dataset_.drop(['id'],axis=1)
+    '''
+    fig, ax = plt.subplots(figsize=(15,7))
+    flierprops = dict(marker='o', markerfacecolor='gray', markersize=6,
+                    linestyle='none', markeredgecolor='black')
+    boxprops=dict(color='gold')
+    ax.boxplot(dataset_,boxprops=boxprops,flierprops=flierprops)
+    ax.set_title('OUTLIERS',fontsize=20)
+    ax.set_xlabel('SHOPS-CATEGORIES',fontsize=18)
+    ax.set_ylabel('SALES',fontsize=18)
+    plt.show()
+    '''
+    
     for i in range(34):
         dataset_.loc[(dataset_['month_'+str(i)] >=1500 ),'month_'+str(i)]=1500
     
