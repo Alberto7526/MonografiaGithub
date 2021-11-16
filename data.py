@@ -56,34 +56,15 @@ def split_looking_back(x,y,look_back):
     split_mapping = {"train": (train), "test": (test)}
     return split_mapping
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def new_feacture(df):
-    items = pd.read_csv("./Datasets/items.csv")
-    items = items[['item_id','item_category_id']]
-    df = pd.merge(df, items, on='item_id',  how='left')
+def new_feature(df):
+    # items = pd.read_csv("./Datasets/items.csv")
+    # items = items[['item_id','item_category_id']]
+    # df = pd.merge(df, items, on='item_id',  how='left')
     df = add_average_sale_per_shop(df)
     df = add_average_items_per_shop(df)
     df = add_average_items_per_category(df)
-    df = add_total_items_per_category(df)
+    # df = add_total_items_per_category(df)
     return df
-
-
-
 
 def clean_dataset(df):
     '''
