@@ -9,7 +9,7 @@ from tensorflow.keras.layers import LSTM,Dense,Input,Concatenate,add
 from tensorflow.keras.models import Model
 from data import * 
 
-
+'''
 def split_looking_back(x,y,look_back):
     dataX1,dataX2, Y = [],[],[]
     for i in range(len(y)-look_back):
@@ -55,12 +55,14 @@ print(model.best_params_)
 '''
 
 
-x1,x2,y = split_looking_back(y_train,y_train,4)
+
+
+x1,x2,y = split_looking_back(y_train,y_train,4) 
 
 print('x1',x1.shape)
 print('x2',x2.shape)
 print('y',y.shape)
-
+ 
 input1 = Input(shape=x1.shape[1:])
 input2 = Input(shape=x2.shape[1])
 
@@ -78,7 +80,7 @@ model.compile(optimizer='adam',
             metrics=['MeanSquaredError'])
 
 model.fit([x1,x2],y)
-
+'''
 
 categoria, tienda,ventas mes de todos los meses (0-33)
 33? ()
