@@ -13,6 +13,7 @@ def transform_data_shop_category(dataset):
     new_dataset = grouped_dataset.agg({
         'item_cnt_day': 'sum',
         'average_price_per_shop': 'mean',
+        'average_price_per_category': 'mean',
         'average_items_per_shop': 'mean',
         'average_items_per_category': 'mean'
     })
@@ -24,6 +25,7 @@ def transform_data_shop_category(dataset):
         'shop_id':[],
         'item_category_id':[],
         'average_price_per_shop': [],
+        'average_price_per_category': [],
         'average_items_per_shop': [],
         'average_items_per_category': []
     }
@@ -34,6 +36,7 @@ def transform_data_shop_category(dataset):
         shop_id = new_dataset.shop_id[i]
         item_category_id = new_dataset.item_category_id[i]
         average_price_per_shop = new_dataset.average_price_per_shop[i]
+        average_price_per_category = new_dataset.average_price_per_category[i]
         average_items_per_shop = new_dataset.average_items_per_shop[i]
         average_items_per_category = new_dataset.average_items_per_category[i]
         month = new_dataset.date_block_num[i]
@@ -47,6 +50,7 @@ def transform_data_shop_category(dataset):
             sales['shop_id'].append(shop_id)
             sales['item_category_id'].append(item_category_id)
             sales['average_price_per_shop'].append(average_price_per_shop)
+            sales['average_price_per_category'].append(average_price_per_category)
             sales['average_items_per_shop'].append(average_items_per_shop)
             sales['average_items_per_category'].append(average_items_per_category)
             for j in range(34):
@@ -58,7 +62,7 @@ def transform_data_shop_category(dataset):
     new_dataset = pd.DataFrame(sales)
     new_dataset = delete_outliers(new_dataset)
     try:
-        new_dataset.to_csv('./NewDataset/New_dataset.csv')
+        new_dataset.to_csv('./NewDataset/New_dataset_features.csv')
     except:
         pass
     return new_dataset
@@ -121,10 +125,26 @@ def transform_data_category(dataset):
 
 def delete_outliers(dataset_):
     dataset_ = dataset_.drop(['id'],axis=1)
+    '''
+    fig, ax = plt.subplots(figsize=(15,7))
+    flierprops = dict(marker='o', markerfacecolor='gray', markersize=6,
+                    linestyle='none', markeredgecolor='black')
+    boxprops=dict(color='gold')
+    ax.boxplot(dataset_,boxprops=boxprops,flierprops=flierprops)
+    ax.set_title('OUTLIERS',fontsize=20)
+    ax.set_xlabel('SHOPS-CATEGORIES',fontsize=18)
+    ax.set_ylabel('SALES',fontsize=18)
+    plt.show()
+    '''
+    
     for i in range(34):
         dataset_.loc[(dataset_['month_'+str(i)] >=1500 ),'month_'+str(i)]=1500
 
     return dataset_
+
+
+
+
 
 
 if __name__ == "__main__":
