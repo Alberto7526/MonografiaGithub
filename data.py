@@ -63,6 +63,7 @@ def new_feature(df):
     df = add_average_sale_per_shop(df)
     df = add_average_items_per_shop(df)
     df = add_average_items_per_category(df)
+    df = add_average_price_per_category(df)
     # df = add_total_items_per_category(df)
     return df
 
@@ -192,6 +193,23 @@ def add_average_items_per_shop(df):
     global_average = 0
     df_c['average_items_per_shop'] = df['shop_id'].apply(
         lambda x: round(average_items_per_shop[x],2) if x in average_items_per_shop else global_average)
+    return df_c
+
+def add_average_price_per_category(df):
+    '''
+    Adds an average of the selling price of items per category
+
+    Parameters:
+    df: the dataset
+
+    Return:
+    df_c: copy of the dataset but with a new column "average_price_per_category" 
+    '''
+    df_c = df.copy()
+    average_sale_price_per_category = df.groupby("item_category_id").mean().to_dict()["item_price"]
+    global_average = 0
+    df_c['average_price_per_category'] = df['item_category_id'].apply(
+        lambda x: round(average_sale_price_per_category[x],2) if x in average_sale_price_per_category else global_average)
     return df_c
 
 def add_average_items_per_category(df):
