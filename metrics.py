@@ -1,11 +1,9 @@
-"""
-In this module we store functions to measuer the performance of our model.
-
-"""
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, make_scorer
+import matplotlib.pyplot as plt
 import app
+from keras import backend
 
 def get_metric_function(name: str, **params):
     mapping = get_metric_name_mapping()
@@ -18,32 +16,57 @@ def get_metric_function(name: str, **params):
 
 def get_metric_name_mapping():
     return {
-        'mean absolute error': mean_absolute_error,
-        'custom prediction error': custom_error}
+        'root mean absolute error': rmse,
+        'custom prediction error': eval}
 
-def custom_error(y_true, y_pred,aditional_info = False):
-    """
-    A custom metric that is related to the business, the lower the better.
+def rmse(y_true, y_pred):
+    return backend.sqrt(backend.mean(backend.square(y_pred - y_true), axis=-1))
+
+def calculate_cost_of_sales(cost,expense,quantity,initial_inventory=0):
+    '''
+    cost_per_item = (cost_per_item+expense_per_item)*(quanrity_per_item+initial_inventory_per_item)
+    '''
+    return float((cost+expense)*(quantity+initial_inventory))
+
+def calculate_expense(expense,quantity,initial_inventory=0):
+    '''
+    experse_per_item = expense_per_item*(quantity_per_item + initial_invrntory_per_item)
+    '''
+    return float(expense*(quantity+initial_inventory))
+
+def eval(x,y_true,y_pred):
+    '''
     
-    """ 
-    items = pd.read_csv("./Datasets/items.csv")
-    dataset = pd.read_csv("./Datasets/sales_train.csv")
-    dataset = pd.merge(dataset,items[['item_id','item_category_id']],how='inner')
-    dataset = dataset.groupby(['item_category_id'], as_index=False).mean()
-    dataset = dataset.drop(columns=('item_id'))
-    dataset = dataset.rename(columns={'item_cnt_day':'item_cnt_month'})
-    df = dataset[['item_category_id','item_price']]
-    sales = {'item_category':[],'cnt_error':[],'total':[],'message':[]}
-    for item_y_true,item_y_pred,data in zip(y_true.values,y_pred,np.array(df)):
-        diff = float(item_y_true-item_y_pred)
-        if diff >= 0:
-            sales['message'].append('Si')
+    '''
+    price = x[:,2]
+    base_price = price*0.87
+    salary_per_employee = 5964
+    employees = 2
+    rental = 8500
+    transportation = 500
+    total_expense = (salary_per_employee*employees)+rental+transportation
+    expense_per_item = (total_expense/(sum(y_pred)))*60 # number_shops
+    cost_sales_pred = []
+    expense_pred = []
+    for i,k in zip(base_price,y_pred):
+        cost_sales_pred.append(calculate_cost_of_sales(i,expense_per_item,k))
+        expense_pred.append(calculate_expense(expense_per_item,k))
+    total_price = []
+    for i, k in zip(price,y_pred):
+        total_price.append(i*k)    
+    gain_pred = []
+    for i,k in zip(total_price,cost_sales_pred):
+        gain_pred.append(i-k)
+    error = []
+    oportunidad =0
+    mantenimiento = 0
+    for i, k in zip(y_true,y_pred):
+        error.append(i-k)
+    for i in range(len(error)):
+        if error[i]<0:
+            oportunidad += float(gain_pred[i])
         else:
-            sales['message'].append('No')
-        sales['item_category'].append(data[0])
-        sales['cnt_error'].append(abs(diff))
-        sales['total'].append(abs(diff)*data[1])
-    if(aditional_info):
-        return sales
-    else:
-        return {'cnt_error':sum(sales['cnt_error']),'total_money':sum(sales['total'])}
+            mantenimiento += expense_pred[i]  
+    print('Costo de oportunidad promedio: ',oportunidad/len(y_pred))
+    print('Costo de mantenimiento promedio: ',mantenimiento/len(y_pred))
+    return oportunidad,mantenimiento

@@ -5,6 +5,7 @@ from numpy.lib.shape_base import split
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+import division_dataset as div_data
 
 
 def get_dataset(filepath,look_back=3):
@@ -12,6 +13,14 @@ def get_dataset(filepath,look_back=3):
     This is the main function, here we process and split the  dataset 
     '''
     df = pd.read_csv(filepath)
+    df = df.drop(['Unnamed: 0'],axis=1)
+    shops = [0,1,7,10,18,24,25,27,33,42,49,53,56,59]
+    for i in shops:
+        df = df.drop(df[df['shop_id']==i].index)
+    categories = [0,1,9,12,29,35,42,44,53,54,56,57,60,64,65,66,69,70,71,]
+    for i in categories:
+        df = df.drop(df[df['item_category_id']==i].index)    
+    print(df.head())
     
     split_mapping = split_dataset(df,look_back=look_back)
     return split_mapping
@@ -19,9 +28,7 @@ def get_dataset(filepath,look_back=3):
 
 
 def split_dataset(df,look_back):    
-    x = df.loc[:,['shop_id','item_category_id']]
-    y = df.drop(columns=['shop_id','item_category_id','id','Unnamed: 0'])
-    s = split_looking_back(x,y,look_back)    
+    s = div_data.split_rnn(df,look_back)    
     #split_mapping = {"train": (X_train, y_train), "test": (X_test, y_test)}
     return s
 

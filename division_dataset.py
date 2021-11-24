@@ -142,7 +142,40 @@ def delete_outliers(dataset_):
 
     return dataset_
 
-
+def split_rnn(df, look_back):
+    x1_ = df[['shop_id','item_category_id','average_price_per_category','average_price_per_shop','average_items_per_shop','average_items_per_category']]
+    x1 = pd.DataFrame()
+    x2 = pd.DataFrame()
+    y = pd.DataFrame()
+    for i in range(32-look_back):
+        x2_aux = pd.DataFrame()
+        for k in range(look_back):
+            x2_ = df[['month_'+str(i+k)]]
+            x2_ = x2_.rename(columns={'month_'+str(i+k):'month_'+str(k)})
+            x2_aux = pd.concat([x2_aux,x2_],axis=1)
+        y_ = df[['month_'+str(i+look_back)]]
+        y_ = y_.rename(columns={'month_'+str(i+look_back):'month'})
+        x1 = pd.concat([x1,x1_],axis=0)
+        x2 = pd.concat([x2,x2_aux],axis=0)
+        y = pd.concat([y,y_],axis=0)
+    x1_test = pd.DataFrame()
+    x2_test = pd.DataFrame()
+    y_test = pd.DataFrame()
+    for i in range(32-look_back,34-look_back,1):
+        print(i)
+        x2_aux = pd.DataFrame()
+        for k in range(look_back):
+            x2_t = df[['month_'+str(i+k)]]
+            x2_t = x2_.rename(columns={'month_'+str(i+k):'month_'+str(k)})
+            x2_aux = pd.concat([x2_aux,x2_],axis=1)
+        y_t = df[['month_'+str(i+look_back)]]
+        y_t = y_t.rename(columns={'month_'+str(i+look_back):'month'})
+        x1_test = pd.concat([x1_test,x1_],axis=0)
+        x2_test = pd.concat([x2_test,x2_aux],axis=0)
+        y_test = pd.concat([y_test,y_t],axis=0)
+    train = (np.array(x1),np.array(x2).reshape(-1,look_back,1),np.array(y))
+    test = (np.array(x1_test),np.array(x2_test).reshape(-1,look_back,1),np.array(y_test))
+    return {'train':train,'test':test}
 
 
 
