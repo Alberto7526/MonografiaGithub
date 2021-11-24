@@ -14,6 +14,7 @@ import os
 import joblib
 import shutil
 import numpy as np
+import matplotlib.pyplot as plt
 
 app = typer.Typer()
 
@@ -23,33 +24,36 @@ def train(config_file: str):
     estimator_config = _load_config(config_file, "estimator")
     data_config = _load_config(config_file, "data")
     X = _get_dataset(data_config)
-    X_train = X['train'][0]
-    y_train = X['train'][1] 
+    X1_train = X['train'][0]
+    X2_train = X['train'][1]
+    y_train = X['train'][2] 
     estimator = model.build_estimator(estimator_config)
-    estimator.fit(X_train, y_train)
+    estimator.fit(X1_train, y_train)
     output_dir = _load_config(config_file, "export")["output_dir"] 
     _save_versioned_estimator(estimator, config_file, output_dir)
 
 @app.command()
 def test(config_file: str):
     model_config = _load_config(config_file, "model")
-    og_dataset_path = os.path.join('Datasets', 'sales_train.csv')
     model = joblib.load(model_config['filepath'])
     data_config = _load_config(config_file, "data")
     X = _get_dataset(data_config)
-    X_test = X['test'][0]
-    y_test = X['test'][1]
-    prediction = model.predict(X_test)
-    df = pd.read_csv(og_dataset_path)
-    error = metrics.custom_error(y_test,prediction,df)
+    x1_test = X['test'][0]
+    x2_test = X['test'][1]
+    y_test = X['test'][2]
+    prediction = model.predict(x1_test)
+    error = metrics.eval(x1_test,y_test,prediction)
     content = {
-        'cnt_error': float(error['cnt_error'][0]),
-        'total_money': float(error['total_money'][0]),
+        'opportunity cost': float(error[0]),
+        'maintenance cost': float(error[1]),
     }
     output_dir = model_config['dir']
     output_file = _load_config(config_file, "metrics")['export']['filepath']
     with open(os.path.join(output_dir, output_file), "w") as f:
         yaml.dump(content, f)
+    plt.plot(y_test)
+    plt.plot(prediction)
+    plt.show()
 
 @app.command()
 def predict(config_file: str, shop_id: int, category_id: int, predict_last: bool):
@@ -120,7 +124,6 @@ def find_hyperparams(config_file: str):
     X = _get_dataset(data_config)
     x_train = X['train'][0]
     y_train = X['train'][1]
-
     estimator = model.build_estimator_search(estimator_config)   
     model_cv = GridSearchCV(estimator,param_grid,return_train_score=False)
     model_cv = model_cv.fit(x_train,y_train)

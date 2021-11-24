@@ -1,14 +1,14 @@
 estimator:
-- name: logistic-regressor
+- name: baseline
   params:
-    random_state: 0
+    {}
 
 model:
-  dir: "./models/2021-11-06 15-18"
-  filepath: "./models/2021-11-06 15-18/model.joblib"
+  dir: "./models/2021-11-23 17-07"
+  filepath: "./models/2021-11-23 17-07/model.joblib"
 
 data:
-  filepath: "./NewDataset/New_dataset.csv"
+  filepath: "./NewDataset/New_dataset_features.csv"
 
   
 search:
