@@ -23,12 +23,20 @@ app = typer.Typer()
 def train(config_file: str):
     estimator_config = _load_config(config_file, "estimator")
     data_config = _load_config(config_file, "data")
-    X = _get_dataset(data_config)
-    X1_train = X['train'][0]
-    X2_train = X['train'][1]
-    y_train = X['train'][2] 
+    X = _get_dataset(data_config, 'train')
+    X1_train = X[0]
+    X2_train = X[1]
+    y_train = X[2] 
+    if estimator_config[0]['additional_info'][0]['multi_input'] == True:
+        inputs = [X1_train, X2_train]
+    else:
+        inputs = X2_train[:,:,0]
+
+    output = y_train
+    if estimator_config[0]['additional_info'][0]['transpose_y'] == True:
+        output = np.ravel(y_train)
     estimator = model.build_estimator(estimator_config)
-    estimator.fit(X1_train, y_train)
+    estimator.fit(inputs, output)
     output_dir = _load_config(config_file, "export")["output_dir"] 
     _save_versioned_estimator(estimator, config_file, output_dir)
 
@@ -37,11 +45,16 @@ def test(config_file: str):
     model_config = _load_config(config_file, "model")
     model = joblib.load(model_config['filepath'])
     data_config = _load_config(config_file, "data")
-    X = _get_dataset(data_config)
-    x1_test = X['test'][0]
-    x2_test = X['test'][1]
-    y_test = X['test'][2]
-    prediction = model.predict(x1_test)
+    X = _get_dataset(data_config, 'test')
+    x1_test = X[0]
+    x2_test = X[1]
+    y_test = X[2]
+    if model_config[0]['multi_input'] == True:
+        inputs = [x1_test, x2_test]
+    else:
+        inputs = x2_test[:,:,0]
+    
+    prediction = model.predict(inputs)
     error = metrics.eval(x1_test,y_test,prediction)
     content = {
         'opportunity cost': float(error[0]),
@@ -78,9 +91,9 @@ def predict(config_file: str, shop_id: int, category_id: int, predict_last: bool
     print(prediction[0])
     return prediction[0]
 
-def _get_dataset(data_config):
+def _get_dataset(data_config, key):
     file_path = data_config['filepath']
-    return data.get_dataset(filepath=file_path)
+    return data.get_dataset(filepath=file_path)[key]
 
 def _load_config(filepath: str, key: str):
     content = _load_yaml(filepath)
@@ -121,12 +134,21 @@ def find_hyperparams(config_file: str):
     param_grid = grid_config['grid'][0]
 
     data_config = _load_config(config_file, "data")
-    X = _get_dataset(data_config)
-    x_train = X['train'][0]
-    y_train = X['train'][1]
+    X = _get_dataset(data_config, 'train')
+    X1_train = X[0]
+    X2_train = X[1]
+    y_train = X[2] 
+    if estimator_config[0]['additional_info'][0]['multi_input'] == True:
+        inputs = [X1_train, X2_train]
+    else:
+        inputs = X2_train[:,:,0]
+
+    output = y_train
+    if estimator_config[0]['additional_info'][0]['transpose_y'] == True:
+        output = np.ravel(y_train)
     estimator = model.build_estimator_search(estimator_config)   
     model_cv = GridSearchCV(estimator,param_grid,return_train_score=False)
-    model_cv = model_cv.fit(x_train,y_train)
+    model_cv = model_cv.fit(inputs,output)
     result = pd.DataFrame(model_cv.cv_results_)  
     output_dir = _load_config(config_file, "export_best")["output_dir"] 
     _save_best_estimator(model_cv.best_estimator_,
