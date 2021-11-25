@@ -142,7 +142,7 @@ def delete_outliers(dataset_):
 
     return dataset_
 
-def split_rnn(df, look_back):
+def split_data(df, look_back):
     x1_ = df[['shop_id','item_category_id','average_price_per_category','average_price_per_shop','average_items_per_shop','average_items_per_category']]
     x1 = pd.DataFrame()
     x2 = pd.DataFrame()

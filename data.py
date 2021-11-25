@@ -28,7 +28,7 @@ def get_dataset(filepath,look_back=3):
 
 
 def split_dataset(df,look_back):    
-    s = div_data.split_rnn(df,look_back)    
+    s = div_data.split_data(df,look_back)    
     #split_mapping = {"train": (X_train, y_train), "test": (X_test, y_test)}
     return s
 
